@@ -66,6 +66,7 @@ static int start = 0;
 static int stop = 0;
 static int background = 0;
 static int mpidfile = 0;
+static int removepidfile = 0;
 static int signal_nr = 15;
 static const char *signal_str = NULL;
 static int user_id = -1;
@@ -320,6 +321,7 @@ do_help(void)
 "  -N|--nicelevel <incr>         add incr to the process's nice level\n"
 "  -b|--background               force the process to detach\n"
 "  -m|--make-pidfile             create the pidfile before starting\n"
+"  -X|--remove-pidfile           delete the pidfile after stopping\n"
 "  -R|--retry <schedule>         check whether processes die, and retry\n"
 "  -t|--test                     test mode, don't do anything\n"
 "  -o|--oknodo                   exit status 0 (not 1) if nothing done\n"
@@ -504,6 +506,7 @@ parse_options(int argc, char * const *argv)
 		{ "nicelevel",	  1, NULL, 'N'},
 		{ "background",   0, NULL, 'b'},
 		{ "make-pidfile", 0, NULL, 'm'},
+		{ "remove-pidfile", 0, NULL, 'X'},
  		{ "retry",        1, NULL, 'R'},
 		{ NULL,		0, NULL, 0}
 	};
@@ -579,6 +582,9 @@ parse_options(int argc, char * const *argv)
 		case 'm':  /* --make-pidfile */
 			mpidfile = 1;
 			break;
+		case 'X':  /* --remove-pidfile */
+			removepidfile = 1;
+			break;
 		case 'R':  /* --retry <schedule>|<timeout> */
 			schedule_str = optarg;
 			break;
@@ -611,6 +617,9 @@ parse_options(int argc, char * const *argv)
 
 	if (mpidfile && pidfile == NULL)
 		badusage("--make-pidfile is only relevant with --pidfile");
+
+	if (removepidfile && pidfile == NULL)
+		badusage("--remove-pidfile is only relevant with --pidfile");
 
 	if (background && !start)
 		badusage("--background is only relevant with --start");
@@ -1053,6 +1062,10 @@ main(int argc, char **argv)
 		fprintf(pidf, "%d\n", pidt);
 		fclose(pidf);
 	}
+	if (removepidfile && pidfile != NULL) { /* user wants _us_ to remove the pidfile :) */
+		unlink(pidfile)
+	}
+
 	set_namespaces();
 	execv(startas, argv);
 	fatal("Unable to start %s: %s", startas, strerror(errno));
