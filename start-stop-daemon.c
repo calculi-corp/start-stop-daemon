@@ -1063,7 +1063,7 @@ main(int argc, char **argv)
 		fclose(pidf);
 	}
 	if (removepidfile && pidfile != NULL) { /* user wants _us_ to remove the pidfile :) */
-		unlink(pidfile)
+		unlink(pidfile);
 	}
 
 	set_namespaces();
